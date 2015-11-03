@@ -1,0 +1,154 @@
+/*
+ *  ARSimple.java
+ *  ARToolKit5
+ *
+ *  Disclaimer: IMPORTANT:  This Daqri software is supplied to you by Daqri
+ *  LLC ("Daqri") in consideration of your agreement to the following
+ *  terms, and your use, installation, modification or redistribution of
+ *  this Daqri software constitutes acceptance of these terms.  If you do
+ *  not agree with these terms, please do not use, install, modify or
+ *  redistribute this Daqri software.
+ *
+ *  In consideration of your agreement to abide by the following terms, and
+ *  subject to these terms, Daqri grants you a personal, non-exclusive
+ *  license, under Daqri's copyrights in this original Daqri software (the
+ *  "Daqri Software"), to use, reproduce, modify and redistribute the Daqri
+ *  Software, with or without modifications, in source and/or binary forms;
+ *  provided that if you redistribute the Daqri Software in its entirety and
+ *  without modifications, you must retain this notice and the following
+ *  text and disclaimers in all such redistributions of the Daqri Software.
+ *  Neither the name, trademarks, service marks or logos of Daqri LLC may
+ *  be used to endorse or promote products derived from the Daqri Software
+ *  without specific prior written permission from Daqri.  Except as
+ *  expressly stated in this notice, no other rights or licenses, express or
+ *  implied, are granted by Daqri herein, including but not limited to any
+ *  patent rights that may be infringed by your derivative works or by other
+ *  works in which the Daqri Software may be incorporated.
+ *
+ *  The Daqri Software is provided by Daqri on an "AS IS" basis.  DAQRI
+ *  MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
+ *  THE IMPLIED WARRANTIES OF NON-INFRINGEMENT, MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE, REGARDING THE DAQRI SOFTWARE OR ITS USE AND
+ *  OPERATION ALONE OR IN COMBINATION WITH YOUR PRODUCTS.
+ *
+ *  IN NO EVENT SHALL DAQRI BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL
+ *  OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) ARISING IN ANY WAY OUT OF THE USE, REPRODUCTION,
+ *  MODIFICATION AND/OR DISTRIBUTION OF THE DAQRI SOFTWARE, HOWEVER CAUSED
+ *  AND WHETHER UNDER THEORY OF CONTRACT, TORT (INCLUDING NEGLIGENCE),
+ *  STRICT LIABILITY OR OTHERWISE, EVEN IF DAQRI HAS BEEN ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  Copyright 2015 Daqri, LLC.
+ *  Copyright 2011-2015 ARToolworks, Inc.
+ *
+ *  Author(s): Julian Looser, Philip Lamb
+ *
+ */
+
+package com.plattysoft.arlights;
+
+import org.artoolkit.ar.base.ARActivity;
+import org.artoolkit.ar.base.rendering.ARRenderer;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.FrameLayout;
+
+import com.philips.lighting.hue.listener.PHLightListener;
+import com.philips.lighting.hue.sdk.PHHueSDK;
+import com.philips.lighting.model.PHBridge;
+import com.philips.lighting.model.PHBridgeResource;
+import com.philips.lighting.model.PHHueError;
+import com.philips.lighting.model.PHLight;
+import com.philips.lighting.model.PHLightState;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+/**
+ * A very simple example of extending ARActivity to create a new AR application.
+ */
+public class ARLightsActivity extends ARActivity {
+
+	private PHHueSDK phHueSDK;
+	private static final int MAX_HUE=65535;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);      
+		setContentView(R.layout.main);
+		phHueSDK = PHHueSDK.create();
+	}
+ 
+	/**
+	 * Provide our own SimpleRenderer.
+	 */
+	@Override
+	protected ARRenderer supplyRenderer() {
+		return new SimpleRenderer();
+	}
+	
+	/**
+	 * Use the FrameLayout in this Activity's UI.
+	 */
+	@Override
+	protected FrameLayout supplyFrameLayout() {
+		return (FrameLayout)this.findViewById(R.id.mainLayout);    	
+	}
+
+	public void randomLights() {
+		PHBridge bridge = phHueSDK.getSelectedBridge();
+
+		List<PHLight> allLights = bridge.getResourceCache().getAllLights();
+		Random rand = new Random();
+
+		for (PHLight light : allLights) {
+			PHLightState lightState = new PHLightState();
+			lightState.setHue(rand.nextInt(MAX_HUE));
+			// To validate your lightstate is valid (before sending to the bridge) you can use:
+			// String validState = lightState.validateState();
+			bridge.updateLightState(light, lightState, listener);
+			//  bridge.updateLightState(light, lightState);   // If no bridge response is required then use this simpler form.
+		}
+	}
+	// If you want to handle the response from the bridge, create a PHLightListener object.
+	PHLightListener listener = new PHLightListener() {
+
+		@Override
+		public void onSuccess() {
+		}
+
+		@Override
+		public void onStateUpdate(Map<String, String> arg0, List<PHHueError> arg1) {
+			Log.w(TAG, "Light has updated");
+		}
+
+		@Override
+		public void onError(int arg0, String arg1) {}
+
+		@Override
+		public void onReceivingLightDetails(PHLight arg0) {}
+
+		@Override
+		public void onReceivingLights(List<PHBridgeResource> arg0) {}
+
+		@Override
+		public void onSearchComplete() {}
+	};
+
+	@Override
+	protected void onDestroy() {
+		PHBridge bridge = phHueSDK.getSelectedBridge();
+		if (bridge != null) {
+
+			if (phHueSDK.isHeartbeatEnabled(bridge)) {
+				phHueSDK.disableHeartbeat(bridge);
+			}
+
+			phHueSDK.disconnect(bridge);
+			super.onDestroy();
+		}
+	}
+}
