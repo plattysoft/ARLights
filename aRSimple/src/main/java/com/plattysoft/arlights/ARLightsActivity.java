@@ -87,7 +87,7 @@ public class ARLightsActivity extends ARActivity {
 	 */
 	@Override
 	protected ARRenderer supplyRenderer() {
-		return new SimpleRenderer();
+		return new LightsRenderer();
 	}
 	
 	/**

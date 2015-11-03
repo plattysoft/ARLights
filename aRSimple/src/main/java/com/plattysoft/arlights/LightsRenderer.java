@@ -58,7 +58,7 @@ import org.artoolkit.ar.base.rendering.Cube;
 /**
  * A very simple Renderer that adds a marker and draws a cube on it.
  */
-public class SimpleRenderer extends ARRenderer {
+public class LightsRenderer extends ARRenderer {
 
 	private int markerID = -1;
 	private Cube cube = new Cube(40.0f, 0.0f, 0.0f, 20.0f);
@@ -69,7 +69,7 @@ public class SimpleRenderer extends ARRenderer {
 	@Override
 	public boolean configureARScene() {
 
-		// Load an NFT
+		// TODO: Load an NFT instead of the hiro marker
 		markerID = ARToolKit.getInstance().addMarker("single;Data/patt.hiro;80");
 		if (markerID < 0) return false;
 
@@ -81,8 +81,8 @@ public class SimpleRenderer extends ARRenderer {
 	 */
 	@Override
 	public void draw(GL10 gl) {
-		// Use jpct to load some nice models that can interact
-		// TODO
+		// TODO: Use jpct to load some nice models that can interact
+
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
 		// Apply the ARToolKit projection matrix
@@ -99,6 +99,10 @@ public class SimpleRenderer extends ARRenderer {
 			gl.glMatrixMode(GL10.GL_MODELVIEW);
 			gl.glLoadMatrixf(ARToolKit.getInstance().queryMarkerTransformation(markerID), 0);
 			cube.draw(gl);
+			// TODO: Show the options
+		}
+		else {
+			// TODO: Hide the options
 		}
 
 	}
