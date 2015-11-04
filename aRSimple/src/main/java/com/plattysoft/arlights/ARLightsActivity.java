@@ -154,14 +154,12 @@ public class ARLightsActivity extends ARActivity implements View.OnClickListener
         if (view.getId() == R.id.low_bright) {
             setLightIntensity(15);
         }
-
     }
 
     private void setLightIntensity(int percentage) {
         PHBridge bridge = phHueSDK.getSelectedBridge();
 
         List<PHLight> allLights = bridge.getResourceCache().getAllLights();
-        Random rand = new Random();
 
         for (PHLight light : allLights) {
             PHLightState lightState = new PHLightState();
