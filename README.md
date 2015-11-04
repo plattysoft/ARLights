@@ -1,6 +1,7 @@
-# ARLights
+# LightAR 
+##/ˈlīdər/
 
-A project to show the Philips Hue lights options from an Augmented reality interface.
+LightAR is a project to control Philips Hue lights using an Augmented reality interface.
 
 This project combines ARToolkit for Android as the tracker for AR and the philips hue demo example to simplify control.
 
