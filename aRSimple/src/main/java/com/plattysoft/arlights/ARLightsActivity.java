@@ -71,7 +71,7 @@ import java.util.Random;
 /**
  * A very simple example of extending ARActivity to create a new AR application.
  */
-public class ARLightsActivity extends ARActivity {
+public class ARLightsActivity extends ARActivity implements View.OnClickListener {
 
 	private PHHueSDK phHueSDK;
 	private static final int MAX_HUE=65535;
@@ -81,9 +81,18 @@ public class ARLightsActivity extends ARActivity {
 		super.onCreate(savedInstanceState);      
 		setContentView(R.layout.main);
 		phHueSDK = PHHueSDK.create();
+
+        initButtons();
 	}
- 
-	/**
+
+    private void initButtons() {
+        findViewById(R.id.full_bright).setOnClickListener(this);
+        findViewById(R.id.half_bright).setOnClickListener(this);
+        findViewById(R.id.dim_bright).setOnClickListener(this);
+        findViewById(R.id.low_bright).setOnClickListener(this);
+    }
+
+    /**
 	 * Provide our own SimpleRenderer.
 	 */
 	@Override
@@ -98,46 +107,6 @@ public class ARLightsActivity extends ARActivity {
 	protected FrameLayout supplyFrameLayout() {
 		return (FrameLayout)this.findViewById(R.id.mainLayout);    	
 	}
-
-	public void randomLights() {
-		PHBridge bridge = phHueSDK.getSelectedBridge();
-
-		List<PHLight> allLights = bridge.getResourceCache().getAllLights();
-		Random rand = new Random();
-
-		for (PHLight light : allLights) {
-			PHLightState lightState = new PHLightState();
-			lightState.setHue(rand.nextInt(MAX_HUE));
-			// To validate your lightstate is valid (before sending to the bridge) you can use:
-			// String validState = lightState.validateState();
-			bridge.updateLightState(light, lightState, listener);
-			//  bridge.updateLightState(light, lightState);   // If no bridge response is required then use this simpler form.
-		}
-	}
-	// If you want to handle the response from the bridge, create a PHLightListener object.
-	PHLightListener listener = new PHLightListener() {
-
-		@Override
-		public void onSuccess() {
-		}
-
-		@Override
-		public void onStateUpdate(Map<String, String> arg0, List<PHHueError> arg1) {
-			Log.w(TAG, "Light has updated");
-		}
-
-		@Override
-		public void onError(int arg0, String arg1) {}
-
-		@Override
-		public void onReceivingLightDetails(PHLight arg0) {}
-
-		@Override
-		public void onReceivingLights(List<PHBridgeResource> arg0) {}
-
-		@Override
-		public void onSearchComplete() {}
-	};
 
 	@Override
 	protected void onDestroy() {
@@ -170,4 +139,34 @@ public class ARLightsActivity extends ARActivity {
             }
         });
 	}
+
+    @Override
+    public void onClick(View view) {
+        if (view.getId() == R.id.full_bright) {
+            setLightIntensity(100);
+        }
+        if (view.getId() == R.id.half_bright) {
+            setLightIntensity(50);
+        }
+        if (view.getId() == R.id.dim_bright) {
+            setLightIntensity(30);
+        }
+        if (view.getId() == R.id.low_bright) {
+            setLightIntensity(15);
+        }
+
+    }
+
+    private void setLightIntensity(int percentage) {
+        PHBridge bridge = phHueSDK.getSelectedBridge();
+
+        List<PHLight> allLights = bridge.getResourceCache().getAllLights();
+        Random rand = new Random();
+
+        for (PHLight light : allLights) {
+            PHLightState lightState = new PHLightState();
+            lightState.setHue(percentage * MAX_HUE / 100);
+            bridge.updateLightState(light, lightState);
+        }
+    }
 }
