@@ -14,6 +14,7 @@ import com.philips.lighting.hue.sdk.PHMessageType;
 import com.philips.lighting.hue.sdk.PHSDKListener;
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHHueParsingError;
+import com.plattysoft.arlights.R;
 
 /**
  * Activity which gives hint for manual pushlink. needs to add <activity
