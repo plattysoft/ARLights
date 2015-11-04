@@ -154,10 +154,20 @@ public class ARLightsActivity extends ARActivity {
 	}
 
 	public void showOptions() {
-		findViewById(R.id.optionsLayout).setVisibility(View.VISIBLE);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                findViewById(R.id.optionsLayout).setVisibility(View.VISIBLE);
+            }
+        });
 	}
 
 	public void hideOptions() {
-		findViewById(R.id.optionsLayout).setVisibility(View.GONE);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                findViewById(R.id.optionsLayout).setVisibility(View.GONE);
+            }
+        });
 	}
 }
