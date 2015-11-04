@@ -53,6 +53,7 @@ import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.rendering.ARRenderer;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import com.philips.lighting.hue.listener.PHLightListener;
@@ -87,7 +88,7 @@ public class ARLightsActivity extends ARActivity {
 	 */
 	@Override
 	protected ARRenderer supplyRenderer() {
-		return new LightsRenderer();
+		return new LightsRenderer(this);
 	}
 	
 	/**
@@ -150,5 +151,13 @@ public class ARLightsActivity extends ARActivity {
 			phHueSDK.disconnect(bridge);
 			super.onDestroy();
 		}
+	}
+
+	public void showOptions() {
+		findViewById(R.id.optionsLayout).setVisibility(View.VISIBLE);
+	}
+
+	public void hideOptions() {
+		findViewById(R.id.optionsLayout).setVisibility(View.GONE);
 	}
 }

@@ -60,8 +60,15 @@ import org.artoolkit.ar.base.rendering.Cube;
  */
 public class LightsRenderer extends ARRenderer {
 
+	private final ARLightsActivity mParent;
+
 	private int markerID = -1;
 	private Cube cube = new Cube(40.0f, 0.0f, 0.0f, 20.0f);
+
+	public LightsRenderer(ARLightsActivity arLightsActivity) {
+		super();
+		mParent = arLightsActivity;
+	}
 
 	/**
 	 * Markers can be configured here.
@@ -99,10 +106,12 @@ public class LightsRenderer extends ARRenderer {
 			gl.glMatrixMode(GL10.GL_MODELVIEW);
 			gl.glLoadMatrixf(ARToolKit.getInstance().queryMarkerTransformation(markerID), 0);
 			cube.draw(gl);
-			// TODO: Show the options
+			// Show the options
+			mParent.showOptions();
 		}
 		else {
-			// TODO: Hide the options
+			// Hide the options
+			mParent.hideOptions();
 		}
 
 	}
