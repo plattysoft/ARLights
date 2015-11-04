@@ -22,4 +22,4 @@
 			android:shouldDisableView="true"
 	    	/>
 	</PreferenceCategory>
-</PreferenceScreen><!-- From: file:/Users/shalafi/Documents/workspaces/ARLights/aRBaseLib/src/main/res/xml/preferences.xml --><!-- From: file:/Users/shalafi/Documents/workspaces/ARLights/aRBaseLib/build/intermediates/bundles/debug/res/xml/preferences.xml -->
+</PreferenceScreen><!-- From: file:/Users/shalafi/Documents/workspaces/LightAR/aRBaseLib/src/main/res/xml/preferences.xml --><!-- From: file:/Users/shalafi/Documents/workspaces/LightAR/aRBaseLib/build/intermediates/bundles/debug/res/xml/preferences.xml -->

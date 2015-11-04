@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/Users/shalafi/Documents/workspaces/ARLights/aRBaseLib/src/main/res/values/strings.xml -->
+    <!-- From: file:/Users/shalafi/Documents/workspaces/LightAR/aRBaseLib/src/main/res/values/strings.xml -->
     <eat-comment/>
     <string-array name="pref_entries_cameraIndex">
         <item>Rear camera</item>

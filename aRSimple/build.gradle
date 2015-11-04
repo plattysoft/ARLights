@@ -22,4 +22,5 @@ dependencies {
     compile project(':aRBaseLib')
     compile files('src/main/libs/huelocalsdk.jar')
     compile files('src/main/libs/huesdkresources.jar')
+    compile files('src/main/libs/jpct_ae.jar')
 }
