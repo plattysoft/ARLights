@@ -104,9 +104,10 @@ public class LightsRenderer extends ARRenderer {
 
     private void initJpct() {
         mWorld = new World();
-        // TODO: make this vatriable based on the current light values
+        // TODO: make this variable based on the current light values
         mWorld.setAmbientLight(150,150,150);
         mModel = Primitives.getCube(40);
+        // TODO: This model has many objects, need to add them all as childs of the tracked onject
 //        mModel = Loader.load3DS(mParent.getResources().openRawResource(R.raw.candlestick), 20)[0];
 
         mWorld.addObject(mModel);
@@ -157,20 +158,4 @@ public class LightsRenderer extends ARRenderer {
         mWorld.draw(mBuffer);
         mBuffer.display();
 	}
-
-//	private Object3D loadModel(String filename, float scale) {
-//		Object3D[] model = Loader.load3DS(filename, scale);
-//		Object3D o3d = new Object3D(0);
-//		Object3D temp = null;
-//		for (int i = 0; i < model.length; i++) {
-//			temp = model[i];
-//			temp.setCenter(SimpleVector.ORIGIN);
-//			temp.rotateX((float)( -.5*Math.PI));
-//			temp.rotateMesh();
-//			temp.setRotationMatrix(new Matrix());
-//			o3d = Object3D.mergeObjects(o3d, temp);
-//			o3d.build();
-//		}
-//		return o3d;
-//	}
 }
