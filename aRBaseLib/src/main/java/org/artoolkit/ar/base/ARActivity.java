@@ -300,7 +300,7 @@ public abstract class ARActivity extends Activity implements CameraEventListener
 			finish();
 		}
 		
-		Toast.makeText(this, "Camera settings: " + width + "x" + height + "@" + rate + "fps", Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "Camera settings: " + width + "x" + height + "@" + rate + "fps", Toast.LENGTH_SHORT).show();
 		
 		firstUpdate = true;
 	}

@@ -49,10 +49,14 @@
 
 package com.plattysoft.arlights;
 
+import android.view.View;
+
 import com.threed.jpct.Camera;
+import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.Loader;
 import com.threed.jpct.Matrix;
 import com.threed.jpct.Object3D;
+import com.threed.jpct.Primitives;
 import com.threed.jpct.SimpleVector;
 import com.threed.jpct.World;
 
@@ -73,6 +77,10 @@ public class LightsRenderer extends ARRenderer {
 	private Cube cube = new Cube(40.0f, 0.0f, 0.0f, 20.0f);
     private World mWorld;
     private Camera mCamera;
+    private Matrix projMatrix = new Matrix();
+    private Object3D mModel;
+    private Matrix dump = new Matrix();
+    private FrameBuffer mBuffer;
 
     public LightsRenderer(ARLightsActivity arLightsActivity) {
 		super();
@@ -98,9 +106,10 @@ public class LightsRenderer extends ARRenderer {
         mWorld = new World();
         // TODO: make this vatriable based on the current light values
         mWorld.setAmbientLight(150,150,150);
-//        Object3D[] model = Loader.load3DS(mParent.getResources().openRawResource(R.raw.candle), 1);
-//
-//        mWorld.addObject(model[0]);
+        mModel = Primitives.getPlane(2, 40);
+//        mModel = Loader.load3DS(mParent.getResources().openRawResource(R.raw.candlestick), 1)[0];
+
+        mWorld.addObject(mModel);
         mWorld.buildAllObjects();
 
         mCamera = mWorld.getCamera();
@@ -111,24 +120,29 @@ public class LightsRenderer extends ARRenderer {
 	 */
 	@Override
 	public void draw(GL10 gl) {
-		// TODO: Use jpct to load some nice models that can interact
+        if (mBuffer == null) {
+            View glView = mParent.getGLView();
+            mBuffer = new FrameBuffer(gl, glView.getWidth(), glView.getHeight());
+        }
+        mBuffer.clear();
 
-		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-
-		// Apply the ARToolKit projection matrix
-		gl.glMatrixMode(GL10.GL_PROJECTION);
-		gl.glLoadMatrixf(ARToolKit.getInstance().getProjectionMatrix(), 0);
-	
-		gl.glEnable(GL10.GL_CULL_FACE);
-        gl.glShadeModel(GL10.GL_SMOOTH);
-        gl.glEnable(GL10.GL_DEPTH_TEST);        
-    	gl.glFrontFace(GL10.GL_CW);
+        float[] projection = ARToolKit.getInstance().getProjectionMatrix();
+        projMatrix.setDump(projection);
+        projMatrix.transformToGL();
+        SimpleVector translation = projMatrix.getTranslation();
+        SimpleVector dir = projMatrix.getZAxis();
+        SimpleVector up = projMatrix.getYAxis();
+        mCamera.setPosition(translation);
+        mCamera.setOrientation(dir, up);
     			
 		// If the marker is visible, apply its transformation, and draw a cube
 		if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
-			gl.glMatrixMode(GL10.GL_MODELVIEW);
-			gl.glLoadMatrixf(ARToolKit.getInstance().queryMarkerTransformation(markerID), 0);
-			cube.draw(gl);
+            float[] transformation = ARToolKit.getInstance().queryMarkerTransformation(markerID);
+            dump.setDump(transformation);
+            dump.transformToGL();
+            mModel.clearTranslation();
+            mModel.translate(dump.getTranslation());
+            mModel.setRotationMatrix(dump);
 			// Show the options
 			mParent.showOptions();
 		}
@@ -137,6 +151,9 @@ public class LightsRenderer extends ARRenderer {
 			mParent.hideOptions();
 		}
 
+        mWorld.renderScene(mBuffer);
+        mWorld.draw(mBuffer);
+        mBuffer.display();
 	}
 
 //	private Object3D loadModel(String filename, float scale) {

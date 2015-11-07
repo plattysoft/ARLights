@@ -110,6 +110,9 @@ public class ARLightsActivity extends ARActivity implements View.OnClickListener
 		setContentView(R.layout.main);
 		phHueSDK = PHHueSDK.create();
 
+        // Make the size of the layout a multiple of the camera sesolution (keep aspect ratio)
+        // Instead of just stretching to fullscreen with match parent
+
         initButtons();
 	}
 
