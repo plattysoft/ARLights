@@ -75,8 +75,36 @@ public class ARLightsActivity extends ARActivity implements View.OnClickListener
 
 	private PHHueSDK phHueSDK;
 	private static final int MAX_HUE=65535;
+    private PHLightListener mListener = new PHLightListener() {
+        @Override
+        public void onReceivingLightDetails(PHLight phLight) {
+        }
 
-	@Override
+        @Override
+        public void onReceivingLights(List<PHBridgeResource> list) {
+        }
+
+        @Override
+        public void onSearchComplete() {
+        }
+
+        @Override
+        public void onSuccess() {
+            Log.d("ARLightsActivity", "Light has updated");
+        }
+
+        @Override
+        public void onError(int i, String s) {
+            Log.d("ARLightsActivity", "Error: "+s);
+        }
+
+        @Override
+        public void onStateUpdate(Map<String, String> map, List<PHHueError> list) {
+
+        }
+    };
+
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);      
 		setContentView(R.layout.main);
@@ -87,6 +115,7 @@ public class ARLightsActivity extends ARActivity implements View.OnClickListener
 
     private void initButtons() {
         findViewById(R.id.full_bright).setOnClickListener(this);
+        findViewById(R.id.quarter_bright).setOnClickListener(this);
         findViewById(R.id.half_bright).setOnClickListener(this);
         findViewById(R.id.dim_bright).setOnClickListener(this);
         findViewById(R.id.low_bright).setOnClickListener(this);
@@ -148,11 +177,14 @@ public class ARLightsActivity extends ARActivity implements View.OnClickListener
         if (view.getId() == R.id.half_bright) {
             setLightIntensity(50);
         }
+        if (view.getId() == R.id.quarter_bright) {
+            setLightIntensity(25);
+        }
         if (view.getId() == R.id.dim_bright) {
-            setLightIntensity(30);
+            setLightIntensity(10);
         }
         if (view.getId() == R.id.low_bright) {
-            setLightIntensity(15);
+            setLightIntensity(1);
         }
     }
 
@@ -163,8 +195,10 @@ public class ARLightsActivity extends ARActivity implements View.OnClickListener
 
         for (PHLight light : allLights) {
             PHLightState lightState = new PHLightState();
-            lightState.setHue(percentage * MAX_HUE / 100);
-            bridge.updateLightState(light, lightState);
+            // Normal lights have brightness but not hue
+            lightState.setBrightness(percentage * 254 / 100);
+//            lightState.setHue(percentage * MAX_HUE / 100);
+            bridge.updateLightState(light, lightState, mListener);
         }
     }
 }

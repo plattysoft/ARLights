@@ -30,6 +30,7 @@
     <string name="txt_last_heartbeat">Last Heartbeat : </string>
     <string name="full_bright">100%</string>
     <string name="half_bright">50%</string>
-    <string name="dim_bright">30%</string>
-    <string name="low_bright">15%</string>
+    <string name="quarter_bright">25%</string>
+    <string name="dim_bright">10%</string>
+    <string name="low_bright">1%</string>
 </resources>
