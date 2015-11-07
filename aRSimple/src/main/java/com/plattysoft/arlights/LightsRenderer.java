@@ -49,10 +49,12 @@
 
 package com.plattysoft.arlights;
 
+import com.threed.jpct.Camera;
 import com.threed.jpct.Loader;
 import com.threed.jpct.Matrix;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
+import com.threed.jpct.World;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -69,8 +71,10 @@ public class LightsRenderer extends ARRenderer {
 
 	private int markerID = -1;
 	private Cube cube = new Cube(40.0f, 0.0f, 0.0f, 20.0f);
+    private World mWorld;
+    private Camera mCamera;
 
-	public LightsRenderer(ARLightsActivity arLightsActivity) {
+    public LightsRenderer(ARLightsActivity arLightsActivity) {
 		super();
 		mParent = arLightsActivity;
 	}
@@ -81,6 +85,8 @@ public class LightsRenderer extends ARRenderer {
 	@Override
 	public boolean configureARScene() {
 
+        initJpct();
+
 		// TODO: Load an NFT instead of the hiro marker
 		markerID = ARToolKit.getInstance().addMarker("single;Data/patt.hiro;80");
 		if (markerID < 0) return false;
@@ -88,7 +94,19 @@ public class LightsRenderer extends ARRenderer {
 		return true;
 	}
 
-	/**
+    private void initJpct() {
+        mWorld = new World();
+        // TODO: make this vatriable based on the current light values
+        mWorld.setAmbientLight(150,150,150);
+//        Object3D[] model = Loader.load3DS(mParent.getResources().openRawResource(R.raw.candle), 1);
+//
+//        mWorld.addObject(model[0]);
+        mWorld.buildAllObjects();
+
+        mCamera = mWorld.getCamera();
+    }
+
+    /**
 	 * Override the draw function from ARRenderer.
 	 */
 	@Override

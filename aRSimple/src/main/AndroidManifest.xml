@@ -44,6 +44,7 @@
         </activity>
         <activity android:name="com.philips.lighting.quickstart.PHPushlinkActivity"></activity>
 		<activity android:name="org.artoolkit.ar.base.camera.CameraPreferencesActivity"></activity>
+		<activity android:name=".ARLightsActivity" />
         
     </application>
     
