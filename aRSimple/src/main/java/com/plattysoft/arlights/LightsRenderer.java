@@ -106,8 +106,8 @@ public class LightsRenderer extends ARRenderer {
         mWorld = new World();
         // TODO: make this vatriable based on the current light values
         mWorld.setAmbientLight(150,150,150);
-        mModel = Primitives.getPlane(2, 40);
-//        mModel = Loader.load3DS(mParent.getResources().openRawResource(R.raw.candlestick), 1)[0];
+        mModel = Primitives.getCube(40);
+//        mModel = Loader.load3DS(mParent.getResources().openRawResource(R.raw.candlestick), 20)[0];
 
         mWorld.addObject(mModel);
         mWorld.buildAllObjects();
@@ -143,10 +143,12 @@ public class LightsRenderer extends ARRenderer {
             mModel.clearTranslation();
             mModel.translate(dump.getTranslation());
             mModel.setRotationMatrix(dump);
+            mModel.setVisibility(true);
 			// Show the options
 			mParent.showOptions();
 		}
 		else {
+            mModel.setVisibility(false);
 			// Hide the options
 			mParent.hideOptions();
 		}
