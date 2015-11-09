@@ -49,6 +49,7 @@
 
 package com.plattysoft.arlights;
 
+import android.content.res.Resources;
 import android.view.View;
 
 import com.threed.jpct.Camera;
@@ -58,6 +59,8 @@ import com.threed.jpct.Matrix;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
 import com.threed.jpct.SimpleVector;
+import com.threed.jpct.Texture;
+import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -106,14 +109,29 @@ public class LightsRenderer extends ARRenderer {
         mWorld = new World();
         // TODO: make this variable based on the current light values
         mWorld.setAmbientLight(150,150,150);
-        mModel = Primitives.getCube(20);
-        mModel.setOrigin(new SimpleVector(0,0,-60));
-//        mWorld.addObject(mModel);
-        // TODO: This model has many objects, need to add them all as childs of the tracked onject
-        Object3D model[] = Loader.load3DS(mParent.getResources().openRawResource(R.raw.pillow), 1);
-        for (int i=0; i<model.length; i++) {
-            mWorld.addObject(model[i]);
-        }
+        Object3D cube = Primitives.getCube(20);
+        cube.setOrigin(new SimpleVector(0,0,-60));
+        mWorld.addObject(cube);
+
+        Object3D plane = Primitives.getPlane(2, 20);
+        Resources res = mParent.getResources();
+        Texture testTexture = new Texture(res.getDrawable(R.drawable.light_bulb));
+        TextureManager.getInstance().addTexture("test", testTexture);
+        plane.setTexture("test");
+        plane.setOrigin(new SimpleVector(0, 0, 0));
+        plane.setBillboarding(true);
+
+        mWorld.addObject(plane);
+
+//        cube.addChild(plane);
+
+        mModel = plane;
+
+//        // TODO: This model has many objects, need to add them all as childs of the tracked onject
+//        Object3D model[] = Loader.load3DS(mParent.getResources().openRawResource(R.raw.pillow), 1);
+//        for (int i=0; i<model.length; i++) {
+//            mWorld.addObject(model[i]);
+//        }
         mWorld.buildAllObjects();
 
         mCamera = mWorld.getCamera();
@@ -138,26 +156,27 @@ public class LightsRenderer extends ARRenderer {
         SimpleVector translation = projMatrix.getTranslation();
         SimpleVector dir = projMatrix.getZAxis();
         SimpleVector up = projMatrix.getYAxis();
-//        mCamera.setPosition(translation);
-//        mCamera.setOrientation(dir, up);
+        mCamera.setPosition(translation);
+        mCamera.setOrientation(dir, up);
     			
 		// If the marker is visible, apply its transformation, and draw a cube
-//		if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
-//            float[] transformation = ARToolKit.getInstance().queryMarkerTransformation(markerID);
-//            dump.setDump(transformation);
-//            dump.transformToGL();
-//            mModel.clearTranslation();
-//            mModel.translate(dump.getTranslation());
-//            mModel.setRotationMatrix(dump);
-//            mModel.setVisibility(true);
-//			// Show the options
-//			mParent.showOptions();
-//		}
-//		else {
-//            mModel.setVisibility(false);
-//			// Hide the options
-//			mParent.hideOptions();
-//		}
+		if (ARToolKit.getInstance().queryMarkerVisible(markerID)) {
+            float[] transformation = ARToolKit.getInstance().queryMarkerTransformation(markerID);
+            dump.setDump(transformation);
+            dump.transformToGL();
+            mModel.clearTranslation();
+            mModel.translate(dump.getTranslation());
+            mModel.setRotationMatrix(dump);
+            mModel.setVisibility(true);
+
+			// Show the options
+			mParent.showOptions();
+		}
+		else {
+            mModel.setVisibility(false);
+			// Hide the options
+			mParent.hideOptions();
+		}
 
         mWorld.renderScene(mBuffer);
         mWorld.draw(mBuffer);
