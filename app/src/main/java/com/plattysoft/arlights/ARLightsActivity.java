@@ -54,6 +54,7 @@ import org.artoolkit.ar.jpct.TrackableObject3d;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -64,8 +65,10 @@ import com.philips.lighting.model.PHBridgeResource;
 import com.philips.lighting.model.PHHueError;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
+import com.threed.jpct.Camera;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
+import com.threed.jpct.SimpleVector;
 import com.threed.jpct.Texture;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
@@ -77,7 +80,7 @@ import java.util.Random;
 /**
  * A very simple example of extending ARActivity to create a new AR application.
  */
-public class ARLightsActivity extends ArJpctActivity implements View.OnClickListener {
+public class ARLightsActivity extends ArJpctActivity implements View.OnClickListener, View.OnTouchListener {
 
 	private PHHueSDK phHueSDK;
     private PHLightListener mListener = new PHLightListener() {
@@ -108,6 +111,8 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
 
         }
     };
+    private int mLastMenuSelected;
+    private World mWorld;
 
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -119,6 +124,7 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         // Instead of just stretching to fullscreen with match parent
 
         initButtons();
+        findViewById(R.id.mainLayout).setOnTouchListener(this);
 	}
 
     private void initButtons() {
@@ -133,23 +139,25 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
     protected void populateTrackableObjects(List<TrackableObject3d> list) {
         TrackableObject3d obj = new TrackableObject3d("single;Data/patt.hiro;80");
 
-        Object3D plane = Primitives.getPlane(2, 180);
+        Object3D plane = Primitives.getPlane(1, 360);
 
         // Load the AR Toolkit texture on top of the plane
         Texture texture = new Texture(getResources().getDrawable(R.drawable.border), false);
-        TextureManager.getInstance().addTexture("artoolkit", texture);
-        plane.setTexture("artoolkit");
+        TextureManager.getInstance().addTexture("border", texture);
+        plane.setTexture("border");
         obj.addChild(plane);
 
         // Load 6 planes in a 3x2 grid
         for (int i=0; i<2; i++) {
             for (int j=0; j<3; j++) {
-                Object3D icon = Primitives.getPlane(2, 40);
+                Object3D icon = Primitives.getPlane(1, 80);
                 icon.translate((j-1)*100, -i*100+50, 1);
                 String textureName = "item_"+(i*3+j);
                 Texture iconTexture = new Texture(getResources().getDrawable(getTextureResource(i*3+j)), false);
                 TextureManager.getInstance().addTexture(textureName, iconTexture);
                 icon.setTexture(textureName);
+                icon.setCollisionMode(Object3D.COLLISION_CHECK_OTHERS);
+                icon.setName(textureName);
                 icon.rotateX((float) Math.PI);
                 // TODO: Each item should have 3 states: Unselected, selected & pressed (last is optional)
                 obj.addChild(icon);
@@ -183,6 +191,7 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
 
     @Override
     public void configureWorld(World world) {
+        mWorld = world;
         world.setAmbientLight(255, 255, 255);
     }
 
@@ -257,5 +266,66 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
 //            lightState.setHue(percentage * MAX_HUE / 100);
             bridge.updateLightState(light, lightState, mListener);
         }
+    }
+
+    @Override
+    public boolean onTouch(View mGlView, MotionEvent arg1) {
+        float convertedX;
+        float convertedY;
+        float conversionFactor = mGlView.getWidth()*(1f/mGlView.getHeight());
+        if (mGlView.getWidth() < mGlView.getHeight()) {
+            convertedX = (2*arg1.getX()/mGlView.getWidth()-1)*conversionFactor;
+            convertedY = (2*arg1.getY()/mGlView.getHeight()-1);
+        }
+        else {
+            convertedX = (2*arg1.getX()/mGlView.getWidth()-1)/conversionFactor;
+            convertedY = (2*arg1.getY()/mGlView.getHeight()-1)/conversionFactor/conversionFactor;
+        }
+        // We take the camera and the point where it looks to
+        Camera c = mWorld.getCamera();
+        SimpleVector org = new SimpleVector(c.getDirection());
+        org.normalize();
+        SimpleVector clickVectorX = new SimpleVector(c.getSideVector());
+        clickVectorX.scalarMul(convertedX);
+        SimpleVector clickVectorY = new SimpleVector(c.getUpVector());
+        clickVectorY.scalarMul(-convertedY);
+        org.add(clickVectorX);
+        org.add(clickVectorY);
+        // try casting a ray
+        // Cast a ray and check if it hits some menu item
+        int menuClicked = mWorld.checkCollision(c.getPosition(), org.normalize(), 2000);
+        if (arg1.getAction() == MotionEvent.ACTION_DOWN) {
+            if (menuClicked != Object3D.NO_OBJECT){
+                onTouchDown(menuClicked);
+            }
+            mLastMenuSelected = menuClicked;
+        }
+        else if (arg1.getAction() == MotionEvent.ACTION_UP) {
+            if (mLastMenuSelected != Object3D.NO_OBJECT) {
+                onMenuItemSelected(mLastMenuSelected);
+                mLastMenuSelected = Object3D.NO_OBJECT;
+            }
+        }
+        else if (arg1.getAction() == MotionEvent.ACTION_MOVE) {
+            if (menuClicked != mLastMenuSelected){
+                if (mLastMenuSelected != Object3D.NO_OBJECT) {
+                    onTouchOut(mLastMenuSelected);
+                }
+                mLastMenuSelected =  Object3D.NO_OBJECT;
+            }
+        }
+        return true;
+    }
+
+    private void onTouchOut(int objectId) {
+        Log.d("ARLights", "onTouchOut "+objectId);
+    }
+
+    private void onMenuItemSelected(int objectId) {
+        Log.d("ARLights", "onMenuItemSelected "+objectId);
+    }
+
+    private void onTouchDown(int objectId) {
+        Log.d("ARLights", "onTouchOut "+objectId);
     }
 }
