@@ -1,2 +1,2 @@
-include ':aRBaseLib'
-include ':aRSimple'
+include ':ArJpctBaseLib'
+include ':app'

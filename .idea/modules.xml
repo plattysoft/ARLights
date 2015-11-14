@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/ArJpctBaseLib/ArJpctBaseLib.iml" filepath="$PROJECT_DIR$/ArJpctBaseLib/ArJpctBaseLib.iml" />
       <module fileurl="file://$PROJECT_DIR$/LightAR.iml" filepath="$PROJECT_DIR$/LightAR.iml" />
-      <module fileurl="file://$PROJECT_DIR$/aRBaseLib/aRBaseLib.iml" filepath="$PROJECT_DIR$/aRBaseLib/aRBaseLib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/aRSimple/aRSimple.iml" filepath="$PROJECT_DIR$/aRSimple/aRSimple.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
 </project>
