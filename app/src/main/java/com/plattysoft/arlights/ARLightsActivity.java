@@ -67,6 +67,8 @@ import com.philips.lighting.model.PHHueError;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
 import com.threed.jpct.Camera;
+import com.threed.jpct.CollisionEvent;
+import com.threed.jpct.CollisionListener;
 import com.threed.jpct.Config;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
@@ -156,16 +158,33 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         // Load 6 planes in a 3x2 grid
         for (int i=0; i<2; i++) {
             for (int j=0; j<3; j++) {
-                Object3D icon = Primitives.getPlane(1, 80);
+                final Object3D icon = Primitives.getPlane(1, 80);
                 icon.translate((j-1)*100, -i*100+50, 1);
-                String textureName = "item_"+(i*3+j);
+                final String textureName = "item_"+(i*3+j);
                 Texture iconTexture = new Texture(getResources().getDrawable(getTextureResource(i*3+j)), false);
+
                 TextureManager.getInstance().addTexture(textureName, iconTexture);
+                final String texturePressedName = "pressed_item_"+(i*3+j);
+
+                final Texture iconPressedTexture = new Texture(getResources().getDrawable(getTexturePressedResource(i*3+j)), false);
+                TextureManager.getInstance().addTexture(texturePressedName, iconPressedTexture);
+
                 icon.setTexture(textureName);
                 icon.setCollisionMode(Object3D.COLLISION_CHECK_OTHERS);
                 icon.setName(textureName);
                 icon.rotateX((float) Math.PI);
                 // TODO: Each item should have 3 states: Unselected, selected & pressed (last is optional)
+                icon.addCollisionListener(new CollisionListener() {
+                    @Override
+                    public void collision(CollisionEvent collisionEvent) {
+                        icon.setTexture(texturePressedName);
+                    }
+
+                    @Override
+                    public boolean requiresPolygonIDs() {
+                        return false;
+                    }
+                });
                 obj.addChild(icon);
             }
         }
@@ -176,10 +195,34 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         list.add(obj);
     }
 
+    private void onIconPressed(String textureName) {
+        // Replace the texture with one that is pressed
+        Log.e("onIconPressed", textureName);
+    }
+
     private int getTextureResource(int i) {
         switch (i) {
             case 0:
                 return R.drawable.light_full;
+            case 1:
+                return R.drawable.read;
+            case 2:
+                return R.drawable.fog_sun;
+            case 3:
+                return R.drawable.candle;
+            case 4:
+                return R.drawable.icon_sleep;
+            case 5:
+                return R.drawable.light_off;
+            default:
+                return R.drawable.light_bulb;
+        }
+    }
+
+    private int getTexturePressedResource(int i) {
+        switch (i) {
+            case 0:
+                return R.drawable.light_full_pressed;
             case 1:
                 return R.drawable.read;
             case 2:
@@ -330,13 +373,22 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
 
     private void onTouchOut(int objectId) {
         Log.d("ARLights", "onTouchOut "+objectId);
+        Object3D plane = mWorld.getObject(objectId);
+        // Set it to the normal state
+        plane.setTexture(plane.getName());
     }
 
     private void onMenuItemSelected(int objectId) {
         Log.d("ARLights", "onMenuItemSelected "+objectId);
+        Object3D plane = mWorld.getObject(objectId);
+        // Set it to the selected state
+        plane.setTexture(plane.getName());
     }
 
     private void onTouchDown(int objectId) {
         Log.d("ARLights", "onTouchOut "+objectId);
+        Object3D plane = mWorld.getObject(objectId);
+        // Set it to the normal state
+        plane.setTexture("pressed_"+plane.getName());
     }
 }
