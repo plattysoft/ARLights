@@ -49,8 +49,8 @@
 
 package com.plattysoft.arlights;
 
-import org.artoolkit.ar.jpct.ArJpctActivity;
-import org.artoolkit.ar.jpct.TrackableObject3d;
+import org.artoolkit.ar.base.rendering.ARRenderer;
+import org.artoolkit.ar.jpct.*;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -139,7 +139,7 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
     protected void populateTrackableObjects(List<TrackableObject3d> list) {
         TrackableObject3d obj = new TrackableObject3d("single;Data/patt.hiro;80");
 
-        Object3D plane = Primitives.getPlane(1, 360);
+        Object3D plane = Primitives.getPlane(1, 360f);
 
         // Load the AR Toolkit texture on top of the plane
         Texture texture = new Texture(getResources().getDrawable(R.drawable.border), false);
@@ -150,8 +150,8 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         // Load 6 planes in a 3x2 grid
         for (int i=0; i<2; i++) {
             for (int j=0; j<3; j++) {
-                Object3D icon = Primitives.getPlane(1, 80);
-                icon.translate((j-1)*100, -i*100+50, 1);
+                Object3D icon = Primitives.getPlane(1, 80f);
+                icon.translate((j-1)*100, -100*i+50f, 1);
                 String textureName = "item_"+(i*3+j);
                 Texture iconTexture = new Texture(getResources().getDrawable(getTextureResource(i*3+j)), false);
                 TextureManager.getInstance().addTexture(textureName, iconTexture);
@@ -193,6 +193,15 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
     public void configureWorld(World world) {
         mWorld = world;
         world.setAmbientLight(255, 255, 255);
+        world.getCamera().setPosition(0, 0, 0);
+        world.getCamera().lookAt(new SimpleVector(0, 0, 20));
+        // Raycast only works for scale of 1 and 1 quad at 10 distance
+        Object3D cube = Primitives.getPlane(1,1);
+        cube.translate(0, 0, 10);
+        cube.setBillboarding(true);
+        cube.setCollisionMode(Object3D.COLLISION_CHECK_OTHERS);
+        world.addObject(cube);
+        cube.build();
     }
 
     /**
@@ -215,6 +224,11 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
 			phHueSDK.disconnect(bridge);
 		}
         super.onDestroy();
+    }
+
+    @Override
+    protected ARRenderer supplyRenderer() {
+        return new ArJcptRenderer(this);
     }
 
 	public void showOptions() {
