@@ -226,6 +226,8 @@ public abstract class ARActivity extends Activity implements CameraEventListener
 		Log.i(TAG, "GLSurfaceView created");
 		
 		// Add the views to the interface
+		// These parameters are based on the camera configuration and made to fill the screen
+
         mainLayout.addView(preview, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
         mainLayout.addView(glView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 
@@ -233,7 +235,35 @@ public abstract class ARActivity extends Activity implements CameraEventListener
 
 		if (glView != null) glView.onResume();
     }
-    
+
+    public void onCameraConfigured(final int captureWidth, final int captureHeight, final int w, final int h) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // if the size of the main layout is >= than the screen, we are good
+                LayoutParams params = mainLayout.getLayoutParams();
+                if (params.height >= h && params.width >= w) {
+                    return;
+                }
+                // Calculate mainLayout best size and change it now
+                float captureRatio = (float) captureWidth / captureHeight;
+                float screenRatio = (float) w / h;
+                int desiredWidth = w;
+                int desiredHeight = h;
+                if (captureRatio < 1) {
+                    // Take the w as reference
+                    desiredWidth = (int) (w / captureRatio);
+                }
+                else {
+                    desiredHeight = (int) (h * captureRatio);
+                }
+                params.height = desiredHeight;
+                params.width = desiredWidth;
+                mainLayout.setLayoutParams(params);
+            }
+        });
+    }
+
 	@Override
 	protected void onPause() {
     	//Log.i(TAG, "onPause()");
@@ -426,6 +456,4 @@ public abstract class ARActivity extends Activity implements CameraEventListener
     	
 		
     }
-
-
 }

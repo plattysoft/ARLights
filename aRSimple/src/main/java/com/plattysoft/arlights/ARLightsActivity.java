@@ -142,6 +142,7 @@ public class ARLightsActivity extends ARActivity implements View.OnClickListener
 
 	@Override
 	protected void onDestroy() {
+        super.onDestroy();
 		PHBridge bridge = phHueSDK.getSelectedBridge();
 		if (bridge != null) {
 

@@ -40,6 +40,7 @@ package org.artoolkit.ar.base.camera;
 import java.io.IOException;
 import java.lang.RuntimeException;
 
+import org.artoolkit.ar.base.ARActivity;
 import org.artoolkit.ar.base.FPSCounter;
 import org.artoolkit.ar.base.R;
 //import java.util.List;
@@ -64,8 +65,9 @@ public class CaptureCameraPreview extends SurfaceView implements SurfaceHolder.C
 	 * Android logging tag for this class.
 	 */
 	private static final String TAG = "CameraPreview";
-	
-	/**
+    private final ARActivity mParent;
+
+    /**
 	 * The Camera doing the capturing.
 	 */
     private Camera camera = null;
@@ -102,8 +104,10 @@ public class CaptureCameraPreview extends SurfaceView implements SurfaceHolder.C
      * @param cel CameraEventListener to use. Can be null.
      */
     @SuppressWarnings("deprecation")
-	public CaptureCameraPreview(Context context, CameraEventListener cel) {
-        super(context);
+	public CaptureCameraPreview(ARActivity parent, CameraEventListener cel) {
+        super(parent);
+
+        mParent = parent;
 
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);      
@@ -208,16 +212,17 @@ public class CaptureCameraPreview extends SurfaceView implements SurfaceHolder.C
 			Camera.getCameraInfo(cameraIndex, cameraInfo);
 			if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) cameraIsFrontFacing = true;
 		}
-        
-		int bufSize = captureWidth * captureHeight * pixelinfo.bitsPerPixel / 8; // For the default NV21 format, bitsPerPixel = 12.
+
+        mParent.onCameraConfigured (captureWidth, captureHeight, w, h);
+
+        int bufSize = captureWidth * captureHeight * pixelinfo.bitsPerPixel / 8; // For the default NV21 format, bitsPerPixel = 12.
 		Log.i(TAG, "Camera buffers will be " + captureWidth + "x" + captureHeight + "@" + pixelinfo.bitsPerPixel + "bpp, " + bufSize + "bytes.");
 		cameraWrapper = new CameraWrapper(camera);       
         cameraWrapper.configureCallback(this, true, 10, bufSize); // For the default NV21 format, bitsPerPixel = 12.
         
         camera.startPreview();
-        
-        if (listener != null) listener.cameraPreviewStarted(captureWidth, captureHeight, captureRate, cameraIndex, cameraIsFrontFacing);
 
+        if (listener != null) listener.cameraPreviewStarted(captureWidth, captureHeight, captureRate, cameraIndex, cameraIsFrontFacing);
     }
 
     @Override

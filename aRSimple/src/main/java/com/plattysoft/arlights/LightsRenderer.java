@@ -108,9 +108,9 @@ public class LightsRenderer extends ARRenderer {
     private void initJpct() {
         mWorld = new World();
         // TODO: make this variable based on the current light values
-        mWorld.setAmbientLight(150,150,150);
-        Object3D cube = Primitives.getCube(20);
-        cube.setOrigin(new SimpleVector(0,0,-60));
+        mWorld.setAmbientLight(255, 255, 150);
+        Object3D cube = Primitives.getBox(40, 1f/40f);
+        cube.setCenter(new SimpleVector(0,0,0));
         mWorld.addObject(cube);
 
         Object3D plane = Primitives.getPlane(2, 20);
@@ -125,7 +125,7 @@ public class LightsRenderer extends ARRenderer {
 
 //        cube.addChild(plane);
 
-        mModel = plane;
+        mModel = cube;
 
 //        // TODO: This model has many objects, need to add them all as childs of the tracked onject
 //        Object3D model[] = Loader.load3DS(mParent.getResources().openRawResource(R.raw.pillow), 1);
@@ -135,8 +135,11 @@ public class LightsRenderer extends ARRenderer {
         mWorld.buildAllObjects();
 
         mCamera = mWorld.getCamera();
-        mCamera.setPosition(-200,0,0);
-        mCamera.lookAt(new SimpleVector(0,0,0));
+        mCamera.setPosition(-200, 0, 0);
+        mCamera.lookAt(new SimpleVector(0, 0, 0));
+        // Config the FOV
+//        mCamera.setFovAngle((float) Math.PI*2);
+//        mCamera.setYFovAngle((float) Math.PI*2);
     }
 
     /**
@@ -164,8 +167,10 @@ public class LightsRenderer extends ARRenderer {
             float[] transformation = ARToolKit.getInstance().queryMarkerTransformation(markerID);
             dump.setDump(transformation);
             dump.transformToGL();
-            mModel.clearTranslation();
-            mModel.translate(dump.getTranslation());
+            mModel.setOrigin(dump.getTranslation());
+            // This produces the same result as clear translation and translate
+//            mModel.clearTranslation();
+//            mModel.translate(dump.getTranslation());
             mModel.setRotationMatrix(dump);
             mModel.setVisibility(true);
 
