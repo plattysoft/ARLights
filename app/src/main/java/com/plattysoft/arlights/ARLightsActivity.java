@@ -160,31 +160,24 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
             for (int j=0; j<3; j++) {
                 final Object3D icon = Primitives.getPlane(1, 80);
                 icon.translate((j-1)*100, -i*100+50, 1);
+
                 final String textureName = "item_"+(i*3+j);
                 Texture iconTexture = new Texture(getResources().getDrawable(getTextureResource(i*3+j)), false);
-
                 TextureManager.getInstance().addTexture(textureName, iconTexture);
-                final String texturePressedName = "pressed_item_"+(i*3+j);
 
+                final String texturePressedName = "pressed_item_"+(i*3+j);
                 final Texture iconPressedTexture = new Texture(getResources().getDrawable(getTexturePressedResource(i*3+j)), false);
                 TextureManager.getInstance().addTexture(texturePressedName, iconPressedTexture);
+
+                final String textureSelectedName = "selected_item_"+(i*3+j);
+                final Texture iconSelectedTexture = new Texture(getResources().getDrawable(getTextureSelectedResource(i * 3 + j)), false);
+                TextureManager.getInstance().addTexture(textureSelectedName, iconSelectedTexture);
 
                 icon.setTexture(textureName);
                 icon.setCollisionMode(Object3D.COLLISION_CHECK_OTHERS);
                 icon.setName(textureName);
                 icon.rotateX((float) Math.PI);
                 // TODO: Each item should have 3 states: Unselected, selected & pressed (last is optional)
-                icon.addCollisionListener(new CollisionListener() {
-                    @Override
-                    public void collision(CollisionEvent collisionEvent) {
-                        icon.setTexture(texturePressedName);
-                    }
-
-                    @Override
-                    public boolean requiresPolygonIDs() {
-                        return false;
-                    }
-                });
                 obj.addChild(icon);
             }
         }
@@ -193,6 +186,25 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         plane.rotateX((float) Math.PI);
 
         list.add(obj);
+    }
+
+    private int getTextureSelectedResource(int i) {
+        switch (i) {
+            case 0:
+                return R.drawable.light_full_selected;
+            case 1:
+                return R.drawable.read_selected;
+            case 2:
+                return R.drawable.fog_sun_selected;
+            case 3:
+                return R.drawable.candle_selected;
+            case 4:
+                return R.drawable.icon_sleep_selected;
+            case 5:
+                return R.drawable.light_off_selected;
+            default:
+                return R.drawable.light_bulb;
+        }
     }
 
     private void onIconPressed(String textureName) {
@@ -224,15 +236,15 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
             case 0:
                 return R.drawable.light_full_pressed;
             case 1:
-                return R.drawable.read;
+                return R.drawable.read_pressed;
             case 2:
-                return R.drawable.fog_sun;
+                return R.drawable.fog_sun_pressed;
             case 3:
-                return R.drawable.candle;
+                return R.drawable.candle_pressed;
             case 4:
-                return R.drawable.icon_sleep;
+                return R.drawable.icon_sleep_pressed;
             case 5:
-                return R.drawable.light_off;
+                return R.drawable.light_off_pressed;
             default:
                 return R.drawable.light_bulb;
         }
@@ -382,11 +394,21 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         Log.d("ARLights", "onMenuItemSelected "+objectId);
         Object3D plane = mWorld.getObject(objectId);
         // Set it to the selected state
-        plane.setTexture(plane.getName());
+        plane.setTexture("selected_"+plane.getName());
+        // Uselect all the other planes
+        for (int i=0; i<2; i++) {
+            for (int j = 0; j < 3; j++) {
+                final String planeName = "item_" + (i * 3 + j);
+                if (!planeName.equals(plane.getName())) {
+                    Object3D otherPlane = mWorld.getObjectByName(planeName);
+                    otherPlane.setTexture(otherPlane.getName());
+                }
+            }
+        }
     }
 
     private void onTouchDown(int objectId) {
-        Log.d("ARLights", "onTouchOut "+objectId);
+        Log.d("ARLights", "onTouchDown "+objectId);
         Object3D plane = mWorld.getObject(objectId);
         // Set it to the normal state
         plane.setTexture("pressed_"+plane.getName());
