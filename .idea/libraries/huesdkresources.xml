@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="huesdkresources">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/aRSimple/src/main/libs/huesdkresources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/src/main/libs/huesdkresources.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
