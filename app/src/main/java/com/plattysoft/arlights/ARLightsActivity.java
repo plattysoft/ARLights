@@ -49,6 +49,7 @@
 
 package com.plattysoft.arlights;
 
+import org.artoolkit.ar.base.rendering.ARRenderer;
 import org.artoolkit.ar.jpct.ArJpctActivity;
 import org.artoolkit.ar.jpct.TrackableObject3d;
 
@@ -66,6 +67,7 @@ import com.philips.lighting.model.PHHueError;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
 import com.threed.jpct.Camera;
+import com.threed.jpct.Config;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
 import com.threed.jpct.SimpleVector;
@@ -82,7 +84,11 @@ import java.util.Random;
  */
 public class ARLightsActivity extends ArJpctActivity implements View.OnClickListener, View.OnTouchListener {
 
-	private PHHueSDK phHueSDK;
+    // A scale of 4 is too much already
+    // scale 3 at relative distance 10, works
+    private static final float PLANE_SCALE = 4;
+    private static final float RELATIVE_DISTANCE = 10;
+    private PHHueSDK phHueSDK;
     private PHLightListener mListener = new PHLightListener() {
         @Override
         public void onReceivingLightDetails(PHLight phLight) {
@@ -191,6 +197,10 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
 
     @Override
     public void configureWorld(World world) {
+        // Tweak the collide offset is important based on the units that ARToolKit uses
+        Config.collideOffset = 1000;
+        Config.farPlane = 2000; // 1000 is too close, given that we use milimeters
+
         mWorld = world;
         world.setAmbientLight(255, 255, 255);
     }
@@ -293,8 +303,8 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         org.add(clickVectorX);
         org.add(clickVectorY);
         // try casting a ray
-        // Cast a ray and check if it hits some menu item
-        int menuClicked = mWorld.checkCollision(c.getPosition(), org.normalize(), 2000);
+        // Cast a ray and check if it hits some menu item that is in view (a.k.a. farPlane)
+        int menuClicked = mWorld.checkCollision(c.getPosition(), org.normalize(), Config.farPlane);
         if (arg1.getAction() == MotionEvent.ACTION_DOWN) {
             if (menuClicked != Object3D.NO_OBJECT){
                 onTouchDown(menuClicked);
