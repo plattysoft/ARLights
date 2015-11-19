@@ -49,6 +49,7 @@
 
 package com.plattysoft.arlights;
 
+import org.artoolkit.ar.base.rendering.ARRenderer;
 import org.artoolkit.ar.jpct.ArJpctActivity;
 import org.artoolkit.ar.jpct.TrackableObject3d;
 
@@ -67,6 +68,7 @@ import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
 import com.threed.jpct.Camera;
 import com.threed.jpct.Config;
+import com.threed.jpct.Interact2D;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
 import com.threed.jpct.SimpleVector;
@@ -328,6 +330,7 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         float convertedX;
         float convertedY;
         float conversionFactor = mGlView.getWidth()*(1f/mGlView.getHeight());
+        // There is quite a lot of discrepancy on the horizontal axis...
         if (mGlView.getWidth() < mGlView.getHeight()) {
             convertedX = (2*arg1.getX()/mGlView.getWidth()-1)*conversionFactor;
             convertedY = (2*arg1.getY()/mGlView.getHeight()-1);
@@ -336,6 +339,8 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
             convertedX = (2*arg1.getX()/mGlView.getWidth()-1)/conversionFactor;
             convertedY = (2*arg1.getY()/mGlView.getHeight()-1)/conversionFactor/conversionFactor;
         }
+        // TODO: Need to give access to the framebuffer to do this or move the onTouch resolution to the renderer (probably better)
+//        SimpleVector dir = Interact2D.reproject2D3DWS(mWorld.getCamera(), renderer.getBuffer(), arg1.getX(), arg1.getY()).normalize();
         // We take the camera and the point where it looks to
         Camera c = mWorld.getCamera();
         SimpleVector org = new SimpleVector(c.getDirection());
