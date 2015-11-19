@@ -49,8 +49,8 @@
 
 package com.plattysoft.arlights;
 
-import org.artoolkit.ar.base.rendering.ARRenderer;
-import org.artoolkit.ar.jpct.*;
+import org.artoolkit.ar.jpct.ArJpctActivity;
+import org.artoolkit.ar.jpct.TrackableObject3d;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -66,6 +66,7 @@ import com.philips.lighting.model.PHHueError;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
 import com.threed.jpct.Camera;
+import com.threed.jpct.Config;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.Primitives;
 import com.threed.jpct.SimpleVector;
@@ -75,14 +76,13 @@ import com.threed.jpct.World;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * A very simple example of extending ARActivity to create a new AR application.
  */
 public class ARLightsActivity extends ArJpctActivity implements View.OnClickListener, View.OnTouchListener {
 
-	private PHHueSDK phHueSDK;
+    private PHHueSDK phHueSDK;
     private PHLightListener mListener = new PHLightListener() {
         @Override
         public void onReceivingLightDetails(PHLight phLight) {
@@ -150,15 +150,11 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         // Load 6 planes in a 3x2 grid
         for (int i=0; i<2; i++) {
             for (int j=0; j<3; j++) {
-                Object3D icon = Primitives.getPlane(1, 80f);
+
+                Object3D icon = createIcon(i * 3 + j);
+
+//                Object3D icon = Primitives.getPlane(1, 80f);
                 icon.translate((j-1)*100, -100*i+50f, 1);
-                String textureName = "item_"+(i*3+j);
-                Texture iconTexture = new Texture(getResources().getDrawable(getTextureResource(i*3+j)), false);
-                TextureManager.getInstance().addTexture(textureName, iconTexture);
-                icon.setTexture(textureName);
-                icon.setCollisionMode(Object3D.COLLISION_CHECK_OTHERS);
-                icon.setName(textureName);
-                icon.rotateX((float) Math.PI);
                 // TODO: Each item should have 3 states: Unselected, selected & pressed (last is optional)
                 obj.addChild(icon);
             }
@@ -168,6 +164,41 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         plane.rotateX((float) Math.PI);
 
         list.add(obj);
+    }
+
+    private Object3D createIcon(int i) {
+        String name = "item_"+i;
+        ClickableObject3D clickableObject = new ClickableObject3D(
+                getResources(),
+                name,
+                getTextureResource(i),
+                getTexturePressedResource(i),
+                getTextureSelectedResource(i));
+        return  clickableObject;
+    }
+
+    private int getTextureSelectedResource(int i) {
+        switch (i) {
+            case 0:
+                return R.drawable.light_full_selected;
+            case 1:
+                return R.drawable.read_selected;
+            case 2:
+                return R.drawable.fog_sun_selected;
+            case 3:
+                return R.drawable.candle_selected;
+            case 4:
+                return R.drawable.icon_sleep_selected;
+            case 5:
+                return R.drawable.light_off_selected;
+            default:
+                return R.drawable.light_bulb;
+        }
+    }
+
+    private void onIconPressed(String textureName) {
+        // Replace the texture with one that is pressed
+        Log.e("onIconPressed", textureName);
     }
 
     private int getTextureResource(int i) {
@@ -189,19 +220,33 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         }
     }
 
+    private int getTexturePressedResource(int i) {
+        switch (i) {
+            case 0:
+                return R.drawable.light_full_pressed;
+            case 1:
+                return R.drawable.read_pressed;
+            case 2:
+                return R.drawable.fog_sun_pressed;
+            case 3:
+                return R.drawable.candle_pressed;
+            case 4:
+                return R.drawable.icon_sleep_pressed;
+            case 5:
+                return R.drawable.light_off_pressed;
+            default:
+                return R.drawable.light_bulb;
+        }
+    }
+
     @Override
     public void configureWorld(World world) {
+        // Tweak the collide offset is important based on the units that ARToolKit uses
+        Config.collideOffset = 1000;
+        Config.farPlane = 2000; // 1000 is too close, given that we use milimeters
+
         mWorld = world;
         world.setAmbientLight(255, 255, 255);
-        world.getCamera().setPosition(0, 0, 0);
-        world.getCamera().lookAt(new SimpleVector(0, 0, 20));
-        // Raycast only works for scale of 1 and 1 quad at 10 distance
-        Object3D cube = Primitives.getPlane(1,1);
-        cube.translate(0, 0, 10);
-        cube.setBillboarding(true);
-        cube.setCollisionMode(Object3D.COLLISION_CHECK_OTHERS);
-        world.addObject(cube);
-        cube.build();
     }
 
     /**
@@ -214,6 +259,7 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
 
 	@Override
 	protected void onDestroy() {
+        super.onDestroy();
 		PHBridge bridge = phHueSDK.getSelectedBridge();
 		if (bridge != null) {
 
@@ -224,11 +270,6 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
 			phHueSDK.disconnect(bridge);
 		}
         super.onDestroy();
-    }
-
-    @Override
-    protected ARRenderer supplyRenderer() {
-        return new ArJcptRenderer(this);
     }
 
 	public void showOptions() {
@@ -306,8 +347,8 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
         org.add(clickVectorX);
         org.add(clickVectorY);
         // try casting a ray
-        // Cast a ray and check if it hits some menu item
-        int menuClicked = mWorld.checkCollision(c.getPosition(), org.normalize(), 2000);
+        // Cast a ray and check if it hits some menu item that is in view (a.k.a. farPlane)
+        int menuClicked = mWorld.checkCollision(c.getPosition(), org.normalize(), Config.farPlane);
         if (arg1.getAction() == MotionEvent.ACTION_DOWN) {
             if (menuClicked != Object3D.NO_OBJECT){
                 onTouchDown(menuClicked);
@@ -332,14 +373,37 @@ public class ARLightsActivity extends ArJpctActivity implements View.OnClickList
     }
 
     private void onTouchOut(int objectId) {
-        Log.d("ARLights", "onTouchOut "+objectId);
+        Object3D plane = mWorld.getObject(objectId);
+        // Set it to the normal state
+        if (plane instanceof ClickableObject3D) {
+            ((ClickableObject3D) plane).onTouchOut();
+        }
     }
 
     private void onMenuItemSelected(int objectId) {
-        Log.d("ARLights", "onMenuItemSelected "+objectId);
+        Object3D plane = mWorld.getObject(objectId);
+        // Set it to the selected state
+        if (plane instanceof ClickableObject3D) {
+            ((ClickableObject3D) plane).setSelected(true);
+        }
+        // Uselect all the other planes
+        for (int i=0; i<2; i++) {
+            for (int j = 0; j < 3; j++) {
+                final String planeName = "item_" + (i * 3 + j);
+                if (!planeName.equals(plane.getName())) {
+                    Object3D otherPlane = mWorld.getObjectByName(planeName);
+                    if (otherPlane instanceof ClickableObject3D) {
+                        ((ClickableObject3D) otherPlane).setSelected(false);
+                    }
+                }
+            }
+        }
     }
 
     private void onTouchDown(int objectId) {
-        Log.d("ARLights", "onTouchOut "+objectId);
+        Object3D plane = mWorld.getObject(objectId);
+        if (plane instanceof ClickableObject3D) {
+            ((ClickableObject3D) plane).onPressed();
+        }
     }
 }
